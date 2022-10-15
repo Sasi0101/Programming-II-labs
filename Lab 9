@@ -1,0 +1,84 @@
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class DAGSortTest {
+
+    DAGSort sort;
+
+    //setting up a DAGSort object for every test
+    @BeforeEach
+    void setup() {
+        sort = new DAGSort();
+    }
+
+    //test if there is any InvalidNode
+    @Test
+    void testInvalidNodeException() {
+        int[][] edges = {{1}};
+        assertThrows(InvalidNodeException.class, () ->sort.sortDAG(edges));
+    }
+
+    //test if there is any NullPointer
+    @Test
+    void testNullPointerException() {
+        int[][] edges = null;
+        assertThrows(NullPointerException.class, () -> sort.sortDAG(edges));
+    }
+
+    //test if any cycle is detected
+    @Test
+    void testCycleDetectedException(){
+        int[][] edges = {{1},{0}};
+        assertThrows(CycleDetectedException.class, () -> sort.sortDAG(edges));
+    }
+
+    //test if it returns an empty graph or not
+    @Test
+    void testReturnEmptyGraph() throws CycleDetectedException, InvalidNodeException {
+        int[][] edges = {{1}, {}};
+        assertFalse(DAGSort.sortDAG(edges).length < 1, "Empty graph was returned");
+    }
+
+    //test if the the order is good
+    @Test
+    void testTopologicalOrdering() throws CycleDetectedException, InvalidNodeException {
+        int[][] edges = {{3},{3,4},{4,7},{5,6,7},{6},{},{},{}};
+        int output[] = {};
+        int numberOfArrows = 0;
+        int check =0;
+        try {
+            output = DAGSort.sortDAG(edges);
+        } catch (NullPointerException e){
+            System.out.println("NullPointerException thrown");
+        } catch (InvalidNodeException e){
+            System.out.println("InvalidNodeException thrown");
+        } catch (CycleDetectedException e) {
+            System.out.println("CycleDetectedException thrown");
+        }
+
+        //loop through the output
+        for(int parent=0; parent<output.length; parent++) {
+            int[] children = new int[1000];
+            for (int k = 0; k < edges[parent].length; k++) {
+                children[k] = edges[parent][k];
+                check++;
+            }
+
+            //j[] has the children of the i-th edge
+            for (int i = parent; i < output.length; i++) {
+                for (int j = 0; j < edges[parent].length; j++) {
+                    if (output[i] == edges[parent][j]) {
+                        numberOfArrows++;
+                    }
+                }
+            }
+            //the numberOfMistakes represent the number of
+            assertTrue(check == numberOfArrows, "You did a good job");
+        }
+
+    }
+
+}
